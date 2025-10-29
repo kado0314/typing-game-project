@@ -8,12 +8,16 @@
 </head>
 <body>
     <div class="container">
-        <h1>📸 カメラ・タイピングチャレンジ</h1>
-        <p>カメラに映っている物をタイピングしましょう！</p>
+        <h1>📸 日本語タイピングチャレンジ</h1>
+        
+        <div class="mode-selection">
+            <button id="cameraModeBtn" class="active-mode">カメラモード</button>
+            <button id="normalModeBtn">ノーマルモード</button>
+        </div>
 
         <div class="video-container">
-            <video id="webcam" autoplay muted playsinline></video>
-            <canvas id="gameCanvas" style="display: none;"></canvas>
+            <video id="webcam" autoplay muted playsinline style="display: none;"></video>
+            <canvas id="gameCanvas"></canvas>
             <p id="status">カメラを起動中です...</p>
         </div>
 
