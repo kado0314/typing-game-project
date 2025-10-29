@@ -1,0 +1,67 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f4f7f6;
+}
+
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 600px;
+    width: 90%;
+}
+
+.video-container {
+    position: relative;
+    margin-bottom: 20px;
+    background-color: #333;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#webcam {
+    width: 100%;
+    height: auto;
+    display: block;
+    transform: scaleX(-1); /* 鏡のように反転表示 */
+}
+
+#target-display {
+    padding: 15px;
+    margin: 15px 0;
+    background-color: #e0f7fa;
+    border: 2px solid #00bcd4;
+    border-radius: 5px;
+}
+
+#target-word {
+    font-size: 2em;
+    font-weight: bold;
+    color: #00838f;
+}
+
+#typing-input {
+    width: 80%;
+    padding: 10px;
+    font-size: 1.2em;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+#typing-input:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+#status, #feedback {
+    margin-top: 10px;
+    font-weight: bold;
+}
