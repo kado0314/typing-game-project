@@ -1,5 +1,5 @@
 body {
-    font-family: sans-serif;
+    font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -18,19 +18,37 @@ body {
     width: 90%;
 }
 
+/* ビデオとキャンバスを重ねて表示するコンテナ */
 .video-container {
     position: relative;
     margin-bottom: 20px;
     background-color: #333;
     border-radius: 8px;
     overflow: hidden;
+    /* キャンバスの初期サイズを設定 */
+    width: 100%;
+    aspect-ratio: 4/3; /* 一般的なカメラ比率 */
+    margin: 0 auto 20px;
 }
 
-#webcam {
+#gameCanvas {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
-    transform: scaleX(-1); /* 鏡のように反転表示 */
+    /* 鏡のように左右反転 */
+    transform: scaleX(-1); 
+}
+
+#status {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 10;
 }
 
 #target-display {
@@ -54,14 +72,28 @@ body {
     border: 2px solid #ccc;
     border-radius: 5px;
     margin-top: 10px;
+    text-align: center;
 }
 
-#typing-input:focus {
-    border-color: #4CAF50;
-    outline: none;
+/* --- モード選択ボタン --- */
+.mode-selection {
+    margin-bottom: 20px;
 }
 
-#status, #feedback {
-    margin-top: 10px;
+.mode-selection button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    border: 2px solid #4CAF50;
+    background-color: white;
+    color: #4CAF50;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1em;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.mode-selection button.active-mode {
+    background-color: #4CAF50;
+    color: white;
     font-weight: bold;
 }
