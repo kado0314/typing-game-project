@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カメラ・タイピングゲーム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📸 カメラ・タイピングチャレンジ</h1>
+        <p>カメラに映っている物をタイピングしましょう！</p>
+
+        <div class="video-container">
+            <video id="webcam" autoplay muted playsinline></video>
+            <canvas id="gameCanvas" style="display: none;"></canvas>
+            <p id="status">カメラを起動中です...</p>
+        </div>
+
+        <div class="game-info">
+            <div id="target-display">
+                <h2>お題: <span id="target-word">---</span></h2>
+            </div>
+            <div id="typing-area">
+                <input type="text" id="typing-input" placeholder="ここにタイピングしてください" disabled>
+                <p id="feedback"></p>
+            </div>
+            <p>スコア: <span id="score">0</span></p>
+            <p>残り時間: <span id="timer">60</span>秒</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
