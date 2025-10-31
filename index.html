@@ -9,12 +9,14 @@
 <body>
     <div class="container">
         <h1>📸 カメラ・タイピングチャレンジ</h1>
-        <p>カメラに映っている物をタイピングしましょう！</p>
+        <p>カメラに映っている物をタイピングしましょう！ (英語入力)</p>
+
+        <button id="startButton">ゲームスタート</button> <p id="status">準備中...</p>
 
         <div class="video-container">
             <video id="webcam" autoplay muted playsinline></video>
             <canvas id="gameCanvas" style="display: none;"></canvas>
-            <p id="status">カメラを起動中です...</p>
+            
         </div>
 
         <div class="game-info">
@@ -22,7 +24,7 @@
                 <h2>お題: <span id="target-word">---</span></h2>
             </div>
             <div id="typing-area">
-                <input type="text" id="typing-input" placeholder="ここにタイピングしてください" disabled>
+                <input type="text" id="typing-input" placeholder="ここにタイピングしてください" disabled oncontextmenu="return false">
                 <p id="feedback"></p>
             </div>
             <p>スコア: <span id="score">0</span></p>
