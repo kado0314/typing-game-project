@@ -11,12 +11,14 @@
         <h1>📸 カメラ・タイピングチャレンジ</h1>
         <p>カメラに映っている物をタイピングしましょう！ (英語入力)</p>
 
-        <button id="startButton">ゲームスタート</button> <p id="status">準備中...</p>
+        <div class="button-area">
+            <button id="startButton">ゲームスタート</button>
+            <button id="detailsButton">お題リスト詳細</button> </div>
+        <p id="status">準備中...</p>
 
         <div class="video-container">
             <video id="webcam" autoplay muted playsinline></video>
             <canvas id="gameCanvas" style="display: none;"></canvas>
-            
         </div>
 
         <div class="game-info">
@@ -32,6 +34,14 @@
         </div>
     </div>
 
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <span class="closeButton">&times;</span>
+            <h2>検出可能なお題リスト (全90種)</h2>
+            <div id="classListContainer">
+                </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     
