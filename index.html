@@ -1,50 +1,60 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>カメラ・タイピングゲーム</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カメラ・タイピングゲーム</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>📸 カメラ・タイピングチャレンジ</h1>
-        <p>カメラに映っている物をタイピングしましょう！ (英語入力)</p>
+    <div class="container">
+        <h1>📸 タイピングチャレンジ</h1>
+        <p>モードを選んでゲームを開始してください。</p>
 
-        <div class="button-area">
-            <button id="startButton">ゲームスタート</button>
-            <button id="detailsButton">お題リスト詳細</button> </div>
-        <p id="status">準備中...</p>
+               <div id="modeSelection">
+            <p><strong>モード選択</strong></p>
+            <div class="button-area">
+                <button id="startCameraButton">📸 カメラモード</button>
+                <button id="startNormalButton">⌨️ ノーマルモード</button>
+            </div>
+            <button id="detailsButton">お題リスト詳細</button>
+        </div>
 
-        <div class="video-container">
-            <video id="webcam" autoplay muted playsinline></video>
-            <canvas id="gameCanvas" style="display: none;"></canvas>
-        </div>
+        <p id="status">準備中...</p>
 
-        <div class="game-info">
-            <div id="target-display">
-                <h2>お題: <span id="target-word">---</span></h2>
-            </div>
-            <div id="typing-area">
-                <input type="text" id="typing-input" placeholder="ここにタイピングしてください" disabled oncontextmenu="return false">
-                <p id="feedback"></p>
-            </div>
-            <p>スコア: <span id="score">0</span></p>
-            <p>残り時間: <span id="timer">60</span>秒</p>
-        </div>
-    </div>
+               <div id="gameArea" style="display: none;">
+            <div class="video-container">
+                <video id="webcam" autoplay muted playsinline></video>
+                               <canvas id="gameCanvas"></canvas>
+            </div>
 
-    <div id="detailsModal" class="modal">
-        <div class="modal-content">
-            <span class="closeButton">&times;</span>
-            <h2>検出可能なお題リスト (全90種)</h2>
-            <div id="classListContainer">
-                </div>
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
-    
-    <script src="script.js"></script>
+            <div class="game-info">
+                <div id="target-display">
+                    <h2>お題: <span id="target-word">---</span></h2>
+                </div>
+                <div id="typing-area">
+                    <input type="text" id="typing-input" placeholder="ここにタイピングしてください" disabled>
+                    <p id="feedback"></p>
+                </div>
+                <p>スコア: <span id="score">0</span></p>
+                <p>残り時間: <span id="timer">60</span>秒</p>
+            </div>
+            <button id="stopButton">ゲームを終了してモード選択に戻る</button>
+        </div>
+    </div>
+
+       <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <span class="closeButton">&times;</span>
+            <h2>検出可能なお題リスト (全90種)</h2>
+            <div id="classListContainer"></div>
+        </div>
+    </div>
+    
+       <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    
+       <script src="data.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
