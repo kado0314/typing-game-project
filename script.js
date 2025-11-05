@@ -42,38 +42,28 @@ const gameState = {
     modelLoaded: false,
     cameraInitialized: false,
     predictions: [], // 検出結果 (Canvas描画用)
-    answeredWords: new Set() // (新機能) 正解済み単語リスト
+    answeredWords: new Set() // (修正) 正解済み単語リスト
 };
 
 
 // --- 1. 初期化処理 ---
 
-// アプリ全体の初期化
 function initializeApp() {
     statusElement.textContent = 'モードを選択してください。';
     startCameraButton.disabled = false;
     startNormalButton.disabled = false;
     detailsButton.disabled = false;
     
-    // モーダルのリストを作成
     populateClassList();
+    setupInputListeners();
+    setupModalListeners();
 
-    // イベントリスナーの設定
     startCameraButton.addEventListener('click', initCameraAndModel);
     startNormalButton.addEventListener('click', () => startGame('normal'));
     stopButton.addEventListener('click', returnToModeSelection);
-
-    // (改善) コピペ禁止 (JSで設定)
-    setupInputListeners();
-
-    // モーダル用リスナー
-    setupModalListeners();
-
-    // ページを離れる際にカメラを停止
     window.addEventListener('beforeunload', stopCamera);
 }
 
-// (新機能) ノーマルモードからカメラモードに切り替える際に実行
 async function initCameraAndModel() {
     if (gameState.modelLoaded && gameState.cameraInitialized) {
         startGame('camera');
@@ -85,21 +75,18 @@ async function initCameraAndModel() {
     startNormalButton.disabled = true;
 
     try {
-        // カメラの起動 (まだなら)
         if (!gameState.cameraInitialized) {
             gameState.stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'environment' } // (改善) 外カメラを優先
+                video: { facingMode: 'environment' }
             });
             webcam.srcObject = gameState.stream;
             await new Promise(resolve => webcam.onloadedmetadata = resolve);
             
-            // Canvasのサイズをビデオに合わせる
             gameCanvas.width = webcam.videoWidth;
             gameCanvas.height = webcam.videoHeight;
             gameState.cameraInitialized = true;
         }
         
-        // モデルのロード (まだなら)
         if (!gameState.modelLoaded) {
             gameState.model = await cocoSsd.load();
             gameState.modelLoaded = true;
@@ -126,7 +113,7 @@ function resetGame() {
     gameState.targetWord = '---';
     gameState.isGameRunning = false;
     gameState.predictions = [];
-    gameState.answeredWords.clear(); // (新機能) 正解リストをリセット
+    gameState.answeredWords.clear(); // (重要) 正解リストをリセット
 
     scoreElement.textContent = gameState.score;
     timerElement.textContent = gameState.time;
@@ -136,16 +123,14 @@ function resetGame() {
     typingInput.disabled = true;
     feedbackElement.textContent = '';
     
-    // Canvasをクリア
     gameState.ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
 }
 
 function startGame(mode) {
-    resetGame(); // まずリセット
+    resetGame();
     gameState.isGameRunning = true;
     gameState.mode = mode;
 
-    // UI切り替え
     modeSelection.style.display = 'none';
     gameArea.style.display = 'block';
     typingInput.disabled = false;
@@ -153,16 +138,14 @@ function startGame(mode) {
 
     if (mode === 'camera') {
         statusElement.textContent = 'ゲーム開始！カメラに映るものを入力してください。';
-        webcam.style.display = 'block';
-        gameCanvas.style.display = 'block';
-        detectObjects(true); // 即座に最初の検出とお題を設定
+        gameCanvas.style.display = 'block'; // Canvasのみ表示
+        detectObjects(true);
         gameState.lastDetectionTime = performance.now();
-        requestAnimationFrame(gameLoop); // (改善) rAFループ開始
+        requestAnimationFrame(gameLoop);
     } else {
         statusElement.textContent = 'ゲーム開始！表示されるお題を入力してください。';
-        webcam.style.display = 'none'; // ノーマルモードでは非表示
-        gameCanvas.style.display = 'none';
-        setNewNormalWord(); // (新機能) ノーマルモードのお題設定
+        gameCanvas.style.display = 'none'; // NormalモードではCanvasも非表示
+        setNewNormalWord();
     }
 
     // ゲームタイマー開始
@@ -183,19 +166,16 @@ function endGame() {
     alert(`ゲーム終了！あなたのスコアは ${gameState.score}点です。`);
     
     typingInput.disabled = true;
-    // resetGame() は呼ばない (stopButtonでリセット)
 }
 
 function returnToModeSelection() {
-    endGame(); // 念のためゲームを終了
-    resetGame(); // 状態をリセット
+    endGame();
+    resetGame();
     
-    // UI切り替え
     gameArea.style.display = 'none';
     modeSelection.style.display = 'block';
     statusElement.textContent = 'モードを選択してください。';
     
-    // ボタンを再度有効化
     startCameraButton.disabled = false;
     startNormalButton.disabled = false;
 }
@@ -210,7 +190,7 @@ function stopCamera() {
 }
 
 
-// --- 3. (改善) ゲームループ (rAF) と Canvas描画 ---
+// --- 3. ゲームループ (rAF) と Canvas描画 ---
 
 function gameLoop(timestamp) {
     if (!gameState.isGameRunning) return;
@@ -221,25 +201,28 @@ function gameLoop(timestamp) {
     // 一定間隔で物体検出
     if (timestamp - gameState.lastDetectionTime > DETECTION_INTERVAL_MS) {
         gameState.lastDetectionTime = timestamp;
-        detectObjects(false); // 通常の検出 (お題変更は強制しない)
+        detectObjects(false);
     }
 
-    requestAnimationFrame(gameLoop); // 次のフレームを要求
+    requestAnimationFrame(gameLoop);
 }
 
 function drawDetections() {
     const ctx = gameState.ctx;
     ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
     
-    // カメラ映像をCanvasに転写
+    // (重要) 非表示のwebcamからCanvasへ映像を転写
     ctx.drawImage(webcam, 0, 0, gameCanvas.width, gameCanvas.height);
 
-    // 検出結果を描画
     ctx.font = '16px Arial';
     ctx.lineWidth = 3;
 
-    gameState.predictions.forEach(p => {
-        // (新機能) 現在のお題は色を変える
+    // ▼▼▼ 修正点: 検出結果から「既に正解した単語」は描画しない ▼▼▼
+    const predictionsToDraw = gameState.predictions.filter(
+        p => !gameState.answeredWords.has(p.class) || p.class === gameState.targetWord
+    );
+
+    predictionsToDraw.forEach(p => {
         if (p.class === gameState.targetWord) {
             ctx.strokeStyle = '#E91E63'; // ピンク
             ctx.fillStyle = '#E91E63';
@@ -248,13 +231,11 @@ function drawDetections() {
             ctx.fillStyle = '#00FFFF';
         }
 
-        // 枠
         ctx.beginPath();
         ctx.rect(p.bbox[0], p.bbox[1], p.bbox[2], p.bbox[3]);
         ctx.stroke();
         
-        // ラベル
-        ctx.fillRect(p.bbox[0], p.bbox[1], p.bbox[2], 20); // ラベル背景
+        ctx.fillRect(p.bbox[0], p.bbox[1], p.bbox[2], 20);
         ctx.fillStyle = '#000000';
         ctx.fillText(`${p.class} (${Math.round(p.score * 100)}%)`, p.bbox[0] + 5, p.bbox[1] + 15);
     });
@@ -268,15 +249,13 @@ async function detectObjects(forceNewWord = false) {
 
     const predictions = await gameState.model.detect(webcam);
     
-    // 検出結果をCanvas描画用に保存
     gameState.predictions = predictions.filter(p => p.score > DETECTION_THRESHOLD);
 
-    // (改善) 検出されたクラス (ユニーク)
     const detectedClasses = new Set(
         gameState.predictions.map(p => p.class)
     );
     
-    // (新機能) 検出リストから、既に正解したものを除外
+    // ▼▼▼ 修正点: 検出リストから、既に正解したものを除外 ▼▼▼
     const availableTargets = [...detectedClasses].filter(
         word => !gameState.answeredWords.has(word)
     );
@@ -284,13 +263,11 @@ async function detectObjects(forceNewWord = false) {
     if (availableTargets.length > 0) {
         statusElement.textContent = `${availableTargets.length}種類のお題候補を検出中。`;
         
-        // (新機能: お題持続) 
-        // お題が '---' か、正解直後(forceNewWord) で、
-        // (新機能: お題持続) 現在のお題がカメラから見えなくなった場合のみ、新しいお題を設定
-        if (forceNewWord || gameState.targetWord === '---' || !detectedClasses.has(gameState.targetWord)) {
+        // お題が '---' か、正解直後(forceNewWord)の場合のみ、新しいお題を設定
+        if (forceNewWord || gameState.targetWord === '---') {
             setNewTargetWord(availableTargets);
         }
-    } else if (gameState.targetWord === '---') { // (お題持続) お題が既にある場合は、見失っても '---' に戻さない
+    } else if (gameState.targetWord === '---') {
         statusElement.textContent = 'お題が見つかりません。カメラに何か映してください。';
         gameState.targetWord = '---';
         targetWordElement.textContent = '---';
@@ -302,7 +279,7 @@ function setTargetWord(newWord) {
     gameState.targetWord = newWord;
     targetWordElement.textContent = newWord;
     feedbackElement.textContent = `新しいお題: 「${newWord}」`;
-    typingInput.value = '';
+    typingInput.value = ''; // (確認) ここで入力欄がクリアされます
     typingInput.focus();
 }
 
@@ -311,13 +288,18 @@ function setNewTargetWord(availableTargets) {
     if (availableTargets.length > 0) {
         const randomIndex = Math.floor(Math.random() * availableTargets.length);
         setTargetWord(availableTargets[randomIndex]);
+    } else {
+        // 検出中のもの ＝ すべて正解済みの場合
+        statusElement.textContent = '検出中のお題は全てクリアしました！';
+        gameState.targetWord = '---';
+        targetWordElement.textContent = '---';
     }
 }
 
-// --- 5. (新機能) お題設定 (ノーマルモード) ---
+// --- 5. お題設定 (ノーマルモード) ---
 
 function setNewNormalWord() {
-    // 全リストから、正解済みのものを除外
+    // ▼▼▼ 修正点: 全リストから、正解済みのものを除外 ▼▼▼
     const availableTargets = ALLOWED_CLASSES.filter(
         word => !gameState.answeredWords.has(word)
     );
@@ -326,12 +308,11 @@ function setNewNormalWord() {
         const randomIndex = Math.floor(Math.random() * availableTargets.length);
         setTargetWord(availableTargets[randomIndex]);
     } else {
-        // 全問正解
         feedbackElement.textContent = '🎉 全問クリア！ 🎉';
         targetWordElement.textContent = "CLEAR!";
         gameState.targetWord = '---';
         typingInput.disabled = true;
-        endGame(); // 時間が残っていても終了
+        endGame();
     }
 }
 
@@ -350,14 +331,14 @@ function setupInputListeners() {
             scoreElement.textContent = gameState.score;
             feedbackElement.textContent = `⭕ 正解！「${gameState.targetWord}」`;
             
-            // (新機能) 正解リストに追加
+            // (重要) 正解リストに追加
             gameState.answeredWords.add(gameState.targetWord);
 
-            // 次のお題へ
+            // (確認) 次のお題設定（setTargetWordが呼ばれ、入力欄がクリアされます）
             if (gameState.mode === 'camera') {
-                detectObjects(true); // カメラモード: 即時再検出
+                detectObjects(true);
             } else {
-                setNewNormalWord(); // ノーマルモード: 次のランダム単語
+                setNewNormalWord();
             }
 
         } else if (gameState.targetWord.startsWith(typedText)) {
@@ -386,7 +367,7 @@ function populateClassList() {
     let htmlContent = '';
     for (const [english, japanese] of Object.entries(COCO_CLASSES)) {
         htmlContent += `<p><strong>${english}</strong>: ${japanese}</p>`;
-    }
+   s  }
     classListContainer.innerHTML = htmlContent;
 }
 
