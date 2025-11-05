@@ -4,241 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>カメラ・タイピングゲーム</title>
-
-       <style>
-        body {
-            /* モダンなフォントスタック */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
-                Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 600px;
-            width: 90%;
-        }
-
-        h1 {
-            color: #4CAF50;
-            margin-bottom: 5px;
-        }
-
-        p#status {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #007bff;
-            margin: 15px 0;
-        }
-
-        /* videoとcanvasを重ねるためのコンテナ */
-        .video-container {
-            position: relative;
-            margin: 20px auto;
-            width: 100%;
-            max-width: 480px;
-            background-color: #000; /* カメラ未起動時の背景 */
-            border-radius: 8px;
-            overflow: hidden; /* 枠線を丸めるため */
-        }
-
-        #webcam, #gameCanvas {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-        }
-
-        /* ▼▼▼ 修正点: videoは非表示にし、JSの描画ソースとしてのみ使用 ▼▼▼ */
-        #webcam {
-            display: none;
-        }
-
-        #gameCanvas {
-            /* 修正点: position:absolute は不要（webcamが非表示のため） */
-            display: block;
-        }
-        /* ▲▲▲ videoとcanvasここまで ▲▲▲ */
-
-
-        /* ボタンエリア */
-        #modeSelection {
-            margin-bottom: 20px;
-        }
-
-        .button-area {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap; /* スマホで折り返し */
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        /* 共通ボタンスタイル */
-        button {
-            padding: 10px 20px;
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, opacity 0.3s;
-        }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        #startCameraButton { background-color: #007bff; }
-        #startNormalButton { background-color: #28a745; }
-        #detailsButton { background-color: #6c757d; }
-        #stopButton { background-color: #dc3545; margin-top: 15px; }
-
-        #startCameraButton:hover:not(:disabled) { background-color: #0056b3; }
-        #startNormalButton:hover:not(:disabled) { background-color: #218838; }
-        #detailsButton:hover:not(:disabled) { background-color: #5a6268; }
-        #stopButton:hover:not(:disabled) { background-color: #c82333; }
-        /* ▲▲▲ ボタンエリアここまで ▲▲▲ */
-
-
-        .game-info {
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            background-color: #fafafa;
-        }
-
-        #target-word {
-            color: #E91E63;
-            font-size: 1.8em;
-            font-weight: bolder;
-            letter-spacing: 1px;
-        }
-
-        #typing-input {
-            width: 80%;
-            padding: 10px;
-            font-size: 1.2em;
-            text-align: center;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-            margin: 10px 0;
-            transition: border-color 0.3s;
-        }
-
-        #typing-input:focus {
-            border-color: #4CAF50;
-            outline: none;
-        }
-
-        #feedback {
-            min-height: 1.5em;
-            color: #FF9800;
-            font-weight: bold;
-        }
-
-        .game-info p {
-            margin: 5px 0;
-            font-size: 1.1em;
-        }
-
-        #score, #timer {
-            font-weight: bold;
-            color: #4CAF50;
-        }
-
-
-        /* モーダル用CSS */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding-top: 60px;
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-       F    border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 10px;
-            position: relative;
-            text-align: left;
-        }
-
-        .closeButton {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-        }
-
-        .closeButton:hover,
-        .closeButton:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        #classListContainer {
-            max-height: 60vh;
-            overflow-y: auto;
-            padding-right: 15px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        #classListContainer p {
-            margin: 4px 0;
-            padding: 5px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-        }
-    </style>
-    </head>
+       <link rel="stylesheet" href="style.css">
+</head>
 <body>
     <div class="container">
         <h1>📸 タイピングチャレンジ</h1>
-        <p>モードを選んでゲームを開始してください。</p>
+        <p id="status">準備中...</p>
 
                <div id="modeSelection">
             <p><strong>モード選択</strong></p>
             <div class="button-area">
-                <button id="startCameraButton">📸 カメラモード</button>
-                <button id="startNormalButton">⌨️ ノーマルモード</button>
-           T </div>
+                               <button id="startCameraButton">📸 カメラモード</button>
+                               <button id="startNormalButton">⌨️ ノーマルモード</button>
+            </div>
             <button id="detailsButton">お題リスト詳細</button>
         </div>
 
-        <p id="status">準備中...</p>
-
                <div id="gameArea" style="display: none;">
             <div class="video-container">
-                               <video id="webcam" autoplay muted playsinline></video>
+                               <video id="webcam" autoplay muted playsinline style="display: none;"></video>
                                <canvas id="gameCanvas"></canvas>
             </div>
 
@@ -247,13 +31,13 @@
                     <h2>お題: <span id="target-word">---</span></h2>
                 </div>
                 <div id="typing-area">
-                    <input type="text" id="typing-input" placeholder="ここにタイピングしてください" disabled>
+                    <input type="text" id="typing-input" placeholder="ここにタイピングしてください" disabled oncontextmenu="return false">
                     <p id="feedback"></p>
                 </div>
                 <p>スコア: <span id="score">0</span></p>
                 <p>残り時間: <span id="timer">60</span>秒</p>
             </div>
-            <button id="stopButton">ゲームを終了してモード選択に戻る</button>
+                       <button id="stopButton">モード選択に戻る</button>
         </div>
     </div>
 
@@ -261,14 +45,15 @@
         <div class="modal-content">
             <span class="closeButton">&times;</span>
             <h2>検出可能なお題リスト (全90種)</h2>
-            <div id="classListContainer"></div>
+            <div id="classListContainer">
+                </div>
         </div>
     </div>
     
        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     
-       <script src="data.js"></script>
+          <script src="data.js"></script> 
     <script src="script.js"></script>
 </body>
 </html>
